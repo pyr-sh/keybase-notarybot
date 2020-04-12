@@ -1,0 +1,35 @@
+html, body, #root {
+  min-height: 100vh;
+}
+
+body {
+  font-family: "Open Sans", "Segoe UI", Tahoma, sans-serif;
+  background: #fafff0;
+}
+
+#layout-logo {
+  position: absolute;
+  left: 32px;
+  top: 24px;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+#layout-logo img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+#layout-logo span {
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  line-height: 32px;
+  margin-left: 8px;
+}
