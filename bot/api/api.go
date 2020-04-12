@@ -51,7 +51,7 @@ func (a *API) Routes() error {
 	return nil
 }
 
-func (a *API) Start() error {
+func (a *API) Start(ctx context.Context) error {
 	a.Log.With(zap.String("addr", a.Addr)).Info("Starting the API server")
 	if err := a.server.ListenAndServe(); err != nil {
 		return err

@@ -7,6 +7,7 @@ import (
 
 	"github.com/pyr-sh/keybase-notarybot/bot/api"
 	"github.com/pyr-sh/keybase-notarybot/bot/database"
+	"github.com/pyr-sh/keybase-notarybot/bot/keybase"
 	"github.com/pyr-sh/keybase-notarybot/bot/storage"
 )
 
@@ -36,6 +37,13 @@ func main() {
 			Driver string `long:"driver" env:"DRIVER" default:"postgres" choice:"postgres" description:"Database driver to use"`
 			DSN    string `long:"dsn" env:"DSN" description:"DSN used to connect"`
 		} `env-namespace:"DB" namespace:"db" group:"Database connectivity"`
+		Keybase struct {
+			BinaryPath string `long:"binary_path" env:"BINARY_PATH" description:"Path to the binary path"`
+			HomeDir    string `long:"home_dir" env:"HOMEDIR" description:"Path to the home dir"`
+			Username   string `long:"username" env:"USERNAME" description:"If provided, the bot gets provisioned using oneshot"`
+			PaperKey   string `long:"paperkey" env:"PAPERKEY" description:"If provided, the bot gets provisioned using oneshot"`
+			LogPath    string `long:"log_path" env:"LOG_PATH" description:"If not set, logs are printed out to stdout/stderr"`
+		} `env-namespace:"KB" namespace:"kb" group:"Keybase bot settings"`
 		Storage struct {
 			Kind      string            `long:"kind" env:"KIND" choice:"google" choice:"local" choice:"s3" choice:"swift" default:"swift" description:"What storage driver to use"`
 			Params    map[string]string `long:"param" env:"PARAMS" description:"A map of storage driver configuration"`
@@ -86,6 +94,20 @@ func main() {
 		panic(err)
 	}
 
+	bot, err := keybase.New(keybase.Config{
+		BinaryPath: opts.Keybase.BinaryPath,
+		HomeDir:    opts.Keybase.HomeDir,
+		Username:   opts.Keybase.Username,
+		PaperKey:   opts.Keybase.PaperKey,
+		LogPath:    opts.Keybase.LogPath,
+
+		Context: ctx,
+		Log:     logger,
+	})
+	if err != nil {
+		panic(err)
+	}
+
 	api, err := api.New(api.Config{
 		Addr:  opts.HTTP.Addr,
 		Debug: opts.Debug,
@@ -98,7 +120,11 @@ func main() {
 		panic(err)
 	}
 
-	if err := api.Start(); err != nil {
+	if err := bot.Start(ctx); err != nil {
+		panic(err)
+	}
+
+	if err := api.Start(ctx); err != nil {
 		panic(err)
 	}
 
