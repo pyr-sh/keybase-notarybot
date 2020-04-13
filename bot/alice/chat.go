@@ -40,6 +40,7 @@ type sendArgs struct {
 	Message chat1.ChatMessage
 }
 
+// Sends a message to the specified channel.
 func (c Chat) Send(ctx context.Context, channel Channel, msg string, opts *SendOpts) (*chat1.SendRes, error) {
 	body, err := json.Marshal(chatCall{
 		Method: "send",
@@ -70,6 +71,7 @@ type reactArgs struct {
 	Message   chat1.ChatMessage
 }
 
+// Reacts to a specified message in a channel.
 func (c Chat) React(ctx context.Context, channel Channel, msgID chat1.MessageID, reaction string) (*chat1.SendRes, error) {
 	body, err := json.Marshal(chatCall{
 		Method: "reaction",
@@ -102,6 +104,8 @@ type ChatListenOpts struct {
 	SubscribeToWallet bool
 }
 
+// Subscribes to new chat API notifications. Pass channels to enable filtering, pass
+// options to customize parameters such as enabling wallet / local notifications.
 func (c Chat) Listen(ctx context.Context, channels []ChatChannel, opts *ChatListenOpts) (*ChatListenStream, error) {
 	args := []interface{}{"chat", "api-listen"}
 	if opts != nil {
@@ -166,6 +170,7 @@ type ChatListenStream struct {
 	readError error
 }
 
+// Returns a channel populated with API notifications.
 func (c *ChatListenStream) Messages() chan chat1.MsgNotification {
 	c.ctx, c.cancel = context.WithCancel(c.res.Context)
 	ch := make(chan chat1.MsgNotification)
@@ -195,12 +200,15 @@ func (c *ChatListenStream) Messages() chan chat1.MsgNotification {
 	return ch
 }
 
+// If any error occured during reading / decoding, it's returned here.
 func (c *ChatListenStream) Err() error {
 	if c.readError != nil {
 		return c.readError
 	}
 	return c.res.Err()
 }
+
+// Closes the stream, killing the client process.
 func (c *ChatListenStream) Close() error {
 	if c.cancel != nil {
 		c.cancel()

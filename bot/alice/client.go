@@ -16,6 +16,7 @@ type Client struct {
 	service   *exec.Cmd
 }
 
+// Creates a new Keybase client using the given settings
 func New(opts ...ClientOption) (*Client, error) {
 	cfg := &clientConfig{}
 	for _, opt := range opts {
@@ -42,6 +43,7 @@ func New(opts ...ClientOption) (*Client, error) {
 	return client, nil
 }
 
+// Starts a library-managed Keybase service. Make sure to Stop() it to gracefully shut it down.
 func (c *Client) Start(ctx context.Context) error {
 	args := c.commonArgs()
 	if c.cfg.botLiteMode {
@@ -63,6 +65,7 @@ func (c *Client) Start(ctx context.Context) error {
 	return nil
 }
 
+// Stop kills the managed Keybase service process.
 func (c *Client) Stop(ctx context.Context) error {
 	if c.service.Process == nil {
 		return nil
@@ -76,6 +79,7 @@ func (c *Client) Stop(ctx context.Context) error {
 	return nil
 }
 
+// Wait waits for the managed service to fully start up
 func (c *Client) Wait(ctx context.Context) error {
 	res, err := c.Exec(ctx, "ctl", "wait")
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"samhofi.us/x/keybase/v2/types/keybase1"
 )
 
+// Provisions the device using oneshot mode.
 func (c *Client) Oneshot(ctx context.Context, username string, paperkey string) error {
 	res, err := c.ExecWithInput(ctx, strings.NewReader(paperkey), "oneshot", "-u", username)
 	if err != nil {
@@ -29,6 +30,7 @@ type WhoamiResult struct {
 	DeviceName     string            `json:"deviceName"`
 }
 
+// Returns details about the currently logged in user / device.
 func (c *Client) Whoami(ctx context.Context) (*WhoamiResult, error) {
 	res, err := c.Exec(ctx, "whoami", "-j")
 	if err != nil {

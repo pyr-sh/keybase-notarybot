@@ -8,14 +8,17 @@ import (
 	"samhofi.us/x/keybase/v2/types/chat1"
 )
 
+// Either ChatChannel or ConversationID.
 type Channel interface {
 	scope() channelScope
 }
 
+// A specified, non-restricted chat channel.
 type ChatChannel chat1.ChatChannel
 
 func (c ChatChannel) scope() channelScope { return channelScope{Channel: chat1.ChatChannel(c)} }
 
+// Random conversation ID, required to use as a restricted bot.
 type ConversationID chat1.ConvIDStr
 
 func (c ConversationID) scope() channelScope { return channelScope{ConversationID: chat1.ConvIDStr(c)} }

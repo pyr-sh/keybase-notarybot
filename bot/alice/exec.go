@@ -17,6 +17,7 @@ type Result struct {
 	cmd *exec.Cmd
 }
 
+// Runs the command and decodes its output.
 func (r *Result) DecodeOnce(input interface{}) error {
 	output, err := r.cmd.Output()
 	if err != nil {
@@ -28,6 +29,7 @@ func (r *Result) DecodeOnce(input interface{}) error {
 	return nil
 }
 
+// Runs the command, discarding its output.
 func (r *Result) RunOnce() error {
 	if err := r.cmd.Run(); err != nil {
 		if x, ok := err.(*exec.ExitError); ok {
@@ -48,6 +50,8 @@ type StreamedResult struct {
 	readError    error
 }
 
+// Transforms the result into a stream, monitoring both its stdout and stderr.
+// Required to interact with the listen APIs.
 func (r *Result) Stream() (*StreamedResult, error) {
 	s := &StreamedResult{
 		r: r,
@@ -102,6 +106,7 @@ func (r *Result) Stream() (*StreamedResult, error) {
 	return s, nil
 }
 
+// Completes the streaming process, printing out stderr if it exited with an error.
 func (s *StreamedResult) Close() error {
 	if err := s.eg.Wait(); err != nil {
 		return errors.Wrapf(err, "stderr: %s", string(s.stderrTail))
@@ -109,6 +114,7 @@ func (s *StreamedResult) Close() error {
 	return nil
 }
 
+// Loads up the next message into StreamedResult's internal buffer
 func (s *StreamedResult) Next() bool {
 	line := []byte{}
 	for {
@@ -136,7 +142,11 @@ func (s *StreamedResult) Next() bool {
 	s.stdoutLine = line
 	return true
 }
+
+// If any read error occured during processing, it's returned here
 func (s *StreamedResult) Err() error { return s.readError }
+
+// Decodes the current buffer's contents into input
 func (s *StreamedResult) Decode(input interface{}) error {
 	return json.Unmarshal(s.stdoutLine, input)
 }
@@ -151,10 +161,12 @@ func (c *Client) commonArgs() []string {
 
 type jm map[string]interface{}
 
+// Executes a single Keybase CLI command without any stdin
 func (c *Client) Exec(ctx context.Context, args ...interface{}) (*Result, error) {
 	return c.ExecWithInput(ctx, nil, args...)
 }
 
+// Executes a Keybase CLI command with the passed stdin
 func (c *Client) ExecWithInput(ctx context.Context, body io.Reader, args ...interface{}) (*Result, error) {
 	commandArgs := c.commonArgs()
 	for _, arg := range args {
