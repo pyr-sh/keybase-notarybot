@@ -43,7 +43,7 @@ type sendArgs struct {
 func (c Chat) Send(ctx context.Context, channel Channel, msg string, opts *SendOpts) (*chat1.SendRes, error) {
 	body, err := json.Marshal(chatCall{
 		Method: "send",
-		Params: J{
+		Params: jm{
 			"options": &sendArgs{
 				channelScope: channel.scope(),
 				SendOpts:     opts.value(),
@@ -73,7 +73,7 @@ type reactArgs struct {
 func (c Chat) React(ctx context.Context, channel Channel, msgID chat1.MessageID, reaction string) (*chat1.SendRes, error) {
 	body, err := json.Marshal(chatCall{
 		Method: "reaction",
-		Params: J{
+		Params: jm{
 			"options": &reactArgs{
 				channelScope: channel.scope(),
 				MessageID:    msgID,

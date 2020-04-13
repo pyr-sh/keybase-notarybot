@@ -149,7 +149,7 @@ func (c *Client) commonArgs() []string {
 	return args
 }
 
-type J map[string]interface{}
+type jm map[string]interface{}
 
 func (c *Client) Exec(ctx context.Context, args ...interface{}) (*Result, error) {
 	return c.ExecWithInput(ctx, nil, args...)
