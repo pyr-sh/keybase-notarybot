@@ -27,7 +27,7 @@ type SendOpts struct {
 	ReplyTo           *chat1.MessageID  `json:"reply_to"`
 }
 
-func (o *SendOpts) Value() SendOpts {
+func (o *SendOpts) value() SendOpts {
 	if o == nil {
 		return SendOpts{}
 	}
@@ -46,7 +46,7 @@ func (c Chat) Send(ctx context.Context, channel Channel, msg string, opts *SendO
 		Params: J{
 			"options": &sendArgs{
 				channelScope: channel.scope(),
-				SendOpts:     opts.Value(),
+				SendOpts:     opts.value(),
 				Message: chat1.ChatMessage{
 					Body: msg,
 				},
