@@ -3,6 +3,8 @@ package alice
 import (
 	"context"
 	"strings"
+
+	"samhofi.us/x/keybase/v2/types/keybase1"
 )
 
 func (c *Client) Oneshot(ctx context.Context, username string, paperkey string) error {
@@ -14,8 +16,8 @@ func (c *Client) Oneshot(ctx context.Context, username string, paperkey string) 
 }
 
 type WhoamiUserResult struct {
-	UID      string `json:"uid"`
-	Username string `json:"username"`
+	UID      keybase1.UID `json:"uid"`
+	Username string       `json:"username"`
 }
 
 type WhoamiResult struct {

@@ -64,6 +64,15 @@ func (c *Client) Start(ctx context.Context) error {
 }
 
 func (c *Client) Stop(ctx context.Context) error {
+	if c.service.Process == nil {
+		return nil
+	}
+	if err := c.service.Process.Kill(); err != nil {
+		return err
+	}
+	if _, err := c.service.Process.Wait(); err != nil {
+		return err
+	}
 	return nil
 }
 

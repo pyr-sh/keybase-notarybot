@@ -18,6 +18,7 @@ require (
 	github.com/shopspring/decimal v0.0.0-20200227202807-02e2044944cc
 	github.com/sirupsen/logrus v1.5.0 // indirect
 	go.uber.org/zap v1.14.1
+	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 	samhofi.us/x/keybase/v2 v2.0.1
 )
 

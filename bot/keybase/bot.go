@@ -2,7 +2,6 @@ package keybase
 
 import (
 	"context"
-	"log"
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -22,8 +21,8 @@ type Config struct {
 }
 
 type Bot struct {
-	Config Config
-	Alice  *alice.Client
+	Config
+	Alice *alice.Client
 }
 
 func New(cfg Config) (*Bot, error) {
@@ -72,23 +71,11 @@ func (b *Bot) Start(ctx context.Context) error {
 	b.Config.Log.With(
 		zap.Bool("logged_in", whoami.LoggedIn),
 		zap.String("username", whoami.User.Username),
-		zap.String("uid", whoami.User.UID),
+		zap.String("uid", string(whoami.User.UID)),
 		zap.String("device_name", whoami.DeviceName),
 	).Info("Connected to a Keybase service")
 
-	channel := alice.ChatChannel{
-		Name: "pzduniak",
-	}
-	x, err := b.Alice.Chat.Send(ctx, channel, "hello world", nil)
-	if err != nil {
-		return err
-	}
-	log.Printf("%#v", x)
-	y, err := b.Alice.Chat.React(ctx, channel, *x.MessageID, ":wave:")
-	if err != nil {
-		return err
-	}
-	log.Printf("%#v", y)
+	go b.handlersLoop()
 
 	return nil
 }
