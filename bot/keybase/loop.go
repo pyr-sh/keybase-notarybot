@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"go.uber.org/zap"
+	"samhofi.us/x/keybase/v2/types/chat1"
 
 	"github.com/pyr-sh/keybase-notarybot/bot/alice"
 )
@@ -26,6 +27,24 @@ func (b *Bot) handlersLoop() {
 }
 
 func (b *Bot) startHandler(ctx context.Context) error {
+	if err := b.Alice.Chat.AdvertiseCommands(ctx, &alice.Advertisement{
+		Alias: "Notary Bot",
+		Advertisements: []*chat1.AdvertiseCommandAPIParam{
+			{
+				Typ: "public",
+				Commands: []chat1.UserBotCommandInput{
+					{
+						Name:        "notary",
+						Description: "Allows you to interact with the document signing functionality.",
+						Usage:       "[create|list|delete] [signatures] ...",
+					},
+				},
+			},
+		},
+	}); err != nil {
+		return err
+	}
+
 	ch, err := b.Alice.Chat.Listen(ctx, nil, nil)
 	if err != nil {
 		return err
@@ -54,6 +73,9 @@ func (b *Bot) startHandler(ctx context.Context) error {
 			}
 			continue
 		}
+		if _, err := b.Alice.Chat.React(ctx, channel, msg.Msg.Id, ":eyes:"); err != nil {
+			return err
+		}
 		args := msgParts[1:]
 		switch args[0] {
 		case "help":
@@ -62,6 +84,14 @@ func (b *Bot) startHandler(ctx context.Context) error {
 			}
 		case "create", "new":
 			if err := b.handleCreate(ctx, msg, channel, args); err != nil {
+				return err
+			}
+		case "list":
+			if err := b.handleList(ctx, msg, channel, args); err != nil {
+				return err
+			}
+		case "delete", "del", "rm", "remove":
+			if err := b.handleDelete(ctx, msg, channel, args); err != nil {
 				return err
 			}
 		default:

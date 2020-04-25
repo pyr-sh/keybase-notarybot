@@ -6,12 +6,14 @@ import (
 	"crypto/subtle"
 	"encoding/hex"
 	"fmt"
+	"regexp"
 
 	"github.com/pkg/errors"
 )
 
+var NonAlphanumericRE = regexp.MustCompile("[^a-zA-Z0-9]+")
+
 type Signature struct {
-	Name       string   `json:"name"`
 	Tags       []string `json:"tags"`
 	Percentage *float64 `json:"percentage"`
 }
@@ -24,16 +26,16 @@ func (s SigHash) String() string {
 
 var ErrInvalidSigHash = errors.New("invalid sig hash")
 
-func CreateSigHash(key []byte, username string, id string) (SigHash, error) {
+func CreateSigHash(key []byte, username string, name string) (SigHash, error) {
 	hashFn := hmac.New(sha256.New, key)
-	if _, err := fmt.Fprintf(hashFn, "%s/%s", username, id); err != nil {
+	if _, err := fmt.Fprintf(hashFn, "%s/%s", username, name); err != nil {
 		return nil, err
 	}
 	return SigHash(hashFn.Sum(nil)), nil
 }
 
-func VerifySigHash(key []byte, username string, id string, hash SigHash) error {
-	generated, err := CreateSigHash(key, username, id)
+func VerifySigHash(key []byte, username string, name string, hash SigHash) error {
+	generated, err := CreateSigHash(key, username, name)
 	if err != nil {
 		return err
 	}

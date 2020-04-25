@@ -52,6 +52,18 @@ func (r *Result) RunOnce() error {
 	return nil
 }
 
+// Runs the command returning its output as a reader
+func (r *Result) RawStream() (io.ReadCloser, error) {
+	stdout, err := r.cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	if err := r.cmd.Start(); err != nil {
+		return nil, err
+	}
+	return stdout, nil
+}
+
 type StreamedResult struct {
 	r            *Result
 	Context      context.Context

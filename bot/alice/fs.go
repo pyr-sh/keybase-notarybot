@@ -82,7 +82,7 @@ func (c FS) List(ctx context.Context, path string, opts *ListOpts) ([]os.FileInf
 			modTime time.Time
 			timeStr = parts[2] + " " + parts[3] + " " + parts[4]
 		)
-		if t, err := time.Parse("Jan 02 15:04", timeStr); err == nil {
+		if t, err := time.Parse("Jan 02 15:04 2006", timeStr+" "+strconv.Itoa(time.Now().Year())); err == nil {
 			modTime = t
 		}
 		if t, err := time.Parse("Jan 02 2006", timeStr); err == nil {
@@ -134,6 +134,101 @@ func (c FS) Write(ctx context.Context, path string, input io.Reader, opts *Write
 		return err
 	}
 	if err := res.RunOnce(); err != nil {
+		return err
+	}
+	return nil
+}
+
+type ReadOpts struct {
+	BufSize int
+}
+
+func (c FS) Read(ctx context.Context, path string, opts *ReadOpts) (io.ReadCloser, error) {
+	args := []interface{}{"fs", "read", path}
+	if opts != nil {
+		if opts.BufSize > 0 {
+			args = append(args, "--buffersize", strconv.Itoa(opts.BufSize))
+		}
+	}
+
+	res, err := c.c.Exec(ctx, args...)
+	if err != nil {
+		return nil, err
+	}
+	return res.RawStream()
+}
+
+type StatOpts struct{}
+
+func (c FS) Stat(ctx context.Context, path string, opts *StatOpts) (os.FileInfo, error) {
+	res, err := c.c.Exec(ctx, "fs", "stat", path)
+	if err != nil {
+		return nil, err
+	}
+	output, err := res.RawOnce()
+	if err != nil {
+		return nil, err
+	}
+
+	// Output consists of two lines, the first one is the path, the second are the details
+	lines := bytes.SplitN(output, []byte("\n"), 2)
+	if len(lines) != 2 {
+		return nil, errors.Errorf("unexpected stat output format, received %s", string(output))
+	}
+	parts := strings.Split(strings.TrimSpace(string(lines[1])), "\t")
+	if len(parts) < 4 {
+		return nil, errors.Errorf("unexpected stat output format, received %s", string(output))
+	}
+
+	// First item of the second line is the mod time using ISO format
+	modTime, err := time.Parse("2006-01-02 15:04:05 MST", parts[0])
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to parse time str %s", parts[0])
+	}
+
+	// Then either "DIR", "SYM" or "FILE"
+	var mode os.FileMode
+	if parts[1] == "DIR" {
+		mode = 0664
+	} else {
+		mode = 0644
+	}
+
+	// Then the site
+	size, err := strconv.ParseInt(parts[2], 10, 64)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to parse size %s", parts[2])
+	}
+
+	// it all ends with the filename, last modification's author and sync status
+	// we ignore all of that for now
+
+	return &fileInfo{
+		name:    strings.TrimSpace(string(lines[0])),
+		size:    size,
+		mode:    mode,
+		modTime: modTime,
+	}, nil
+}
+
+type RemoveOps struct {
+	Recursive bool
+}
+
+func (c FS) Remove(ctx context.Context, path string, opts *RemoveOps) error {
+	args := []interface{}{"fs", "rm", path}
+	if opts != nil && opts.Recursive {
+		args = append(args, "--recursive")
+	}
+
+	res, err := c.c.Exec(ctx, args...)
+	if err != nil {
+		return err
+	}
+	if err := res.RunOnce(); err != nil {
+		if strings.Contains(err.Error(), "file or folder does not exist (code 5103)") {
+			return ErrNotExist
+		}
 		return err
 	}
 	return nil

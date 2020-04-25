@@ -58,6 +58,9 @@ func (c Chat) Send(ctx context.Context, channel Channel, msg string, opts *SendO
 		return nil, err
 	}
 	res, err := c.c.ExecWithInput(ctx, bytes.NewReader(body), "chat", "api")
+	if err != nil {
+		return nil, err
+	}
 	reply := &struct{ Result *chat1.SendRes }{}
 	if err := res.DecodeOnce(reply); err != nil {
 		return nil, err
@@ -89,11 +92,53 @@ func (c Chat) React(ctx context.Context, channel Channel, msgID chat1.MessageID,
 		return nil, err
 	}
 	res, err := c.c.ExecWithInput(ctx, bytes.NewReader(body), "chat", "api")
+	if err != nil {
+		return nil, err
+	}
 	reply := &struct{ Result *chat1.SendRes }{}
 	if err := res.DecodeOnce(reply); err != nil {
 		return nil, err
 	}
 	return reply.Result, nil
+}
+
+type Advertisement struct {
+	Alias          string `json:"alias,omitempty"`
+	Advertisements []*chat1.AdvertiseCommandAPIParam
+}
+
+// Advertises specific commands
+func (c Chat) AdvertiseCommands(ctx context.Context, advertisement *Advertisement) error {
+	body, err := json.Marshal(chatCall{
+		Method: "advertisecommands",
+		Params: jm{
+			"options": advertisement,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	res, err := c.c.ExecWithInput(ctx, bytes.NewReader(body), "chat", "api")
+	if err != nil {
+		return err
+	}
+	return res.RunOnce()
+}
+
+// Clears the advertised commands
+func (c Chat) ClearCommands(ctx context.Context) error {
+	body, err := json.Marshal(chatCall{
+		Method: "clearcommands",
+		Params: jm{}, // explicitly pass {}
+	})
+	if err != nil {
+		return err
+	}
+	res, err := c.c.ExecWithInput(ctx, bytes.NewReader(body), "chat", "api")
+	if err != nil {
+		return err
+	}
+	return res.RunOnce()
 }
 
 type ChatListenOpts struct {

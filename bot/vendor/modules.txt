@@ -43,9 +43,8 @@ github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/dchest/uniuri v0.0.0-20200228104902-7aecb25e1fe5
 github.com/dchest/uniuri
-# github.com/docker/distribution v2.7.1+incompatible
-github.com/docker/distribution/context
-github.com/docker/distribution/uuid
+# github.com/dustin/go-humanize v1.0.0
+github.com/dustin/go-humanize
 # github.com/fatih/structtag v1.2.1-0.20200124061725-b5218c33d866
 github.com/fatih/structtag
 # github.com/gin-contrib/sse v0.1.0
@@ -71,8 +70,6 @@ github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
 # github.com/googleapis/gax-go/v2 v2.0.5
 github.com/googleapis/gax-go/v2
-# github.com/gorilla/mux v1.7.4
-github.com/gorilla/mux
 # github.com/graymeta/stow v0.2.5
 github.com/graymeta/stow
 github.com/graymeta/stow/google
@@ -90,8 +87,6 @@ github.com/jmoiron/sqlx
 github.com/jmoiron/sqlx/reflectx
 # github.com/json-iterator/go v1.1.9
 github.com/json-iterator/go
-# github.com/konsorten/go-windows-terminal-sequences v1.0.1
-github.com/konsorten/go-windows-terminal-sequences
 # github.com/lann/builder v0.0.0-20180802200727-47ae307949d0
 github.com/lann/builder
 # github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0
@@ -116,10 +111,6 @@ github.com/ncw/swift
 github.com/pkg/errors
 # github.com/rs/cors v1.7.0
 github.com/rs/cors
-# github.com/shopspring/decimal v0.0.0-20200227202807-02e2044944cc
-github.com/shopspring/decimal
-# github.com/sirupsen/logrus v1.5.0
-github.com/sirupsen/logrus
 # github.com/ugorji/go/codec v1.1.7
 github.com/ugorji/go/codec
 # go.opencensus.io v0.21.0

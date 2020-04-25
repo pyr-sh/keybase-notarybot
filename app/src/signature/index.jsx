@@ -7,8 +7,7 @@ import {API_URL} from '../constants'
 import Drop from './1-drop'
 import Crop, {getCroppedImage} from './2-crop'
 import Position from './3-position'
-import Name from './4-name'
-import Complete from './5-complete'
+import Complete from './4-complete'
 
 import './style.css'
 
@@ -16,10 +15,10 @@ const maxWidth = 600
 const maxHeight = 300
 
 const Signature = ({ username, id, hash }) => {
-  // upload, crop, position, name, complete
-  const [mode, setMode] = React.useState('upload')
+  // drop, crop, position, complete
+  const [mode, setMode] = React.useState('drop')
 
-  // Drag and drop handler, manages the transition between the upload and crop modes
+  // Drag and drop handler, manages the transition between the drop and crop modes
   const [uncroppedImage, setUncroppedImage] = React.useState('')
   const onDrop = React.useCallback(data => {
     setUncroppedImage(data)
@@ -33,9 +32,6 @@ const Signature = ({ username, id, hash }) => {
   // Position
   const [coords, setCoords] = React.useState([0, 0])
   const [size, setSize] = React.useState([0, 0])
-
-  // Name
-  const [name, setName] = React.useState('')
 
   // The rest of the flow is handled here and in the handleContinue function
   const canContinue = React.useMemo(() => {
@@ -51,12 +47,8 @@ const Signature = ({ username, id, hash }) => {
       return coords[0] !== 0 && coords[1] !== 0
     }
 
-    if (mode === 'name') {
-      return name.length > 0
-    }
-
     return false
-  }, [mode, crop, coords, name])
+  }, [mode, crop, coords])
   const handleContinue = React.useCallback(async () => {
     if (mode === 'crop') {
       const image = await getCroppedImage(uncroppedImage, crop)
@@ -66,11 +58,6 @@ const Signature = ({ username, id, hash }) => {
     }
 
     if (mode === 'position') {
-      setMode('name')
-      return
-    }
-
-    if (mode === 'name') {
       // The idea at this point is to draw the line over the signature
       const img = new Image()
       img.onload = async () => {
@@ -111,7 +98,6 @@ const Signature = ({ username, id, hash }) => {
               "u":    username,
               "id":   id,
               "sig":  hash,
-              "name": name,
               "p":    percentageHeight,
             },
           })
@@ -122,7 +108,7 @@ const Signature = ({ username, id, hash }) => {
       }
       img.src = croppedImage
     }
-  }, [mode, uncroppedImage, setCroppedImage, croppedImage, crop, coords, size, hash, id, name, username])
+  }, [mode, uncroppedImage, setCroppedImage, croppedImage, crop, coords, size, hash, id, username])
 
 
   return (
@@ -130,17 +116,16 @@ const Signature = ({ username, id, hash }) => {
       <div className="signature-modal">
         <div className="signature-header">
           {
-            mode === 'upload' ? 'Upload a signature' :
+            mode === 'drop' ? 'Upload a signature' :
             mode === 'crop' ? 'Crop the signature' :
             mode === 'position' ? 'Position the signature on the dotted line' :
-            mode === 'name' ? 'Name your signature' :
             mode === 'complete' ? 'Success!' :
             'Invalid mode'
           }
         </div>
 
         <div className="signature-body">
-          {mode === 'upload' && <Drop onDrop={onDrop} />}
+          {mode === 'drop' && <Drop onDrop={onDrop} />}
           {mode === 'crop' && <Crop image={uncroppedImage} crop={crop} onCrop={setCrop} />}
           {mode === 'position' && <Position
             image={croppedImage}
@@ -151,21 +136,20 @@ const Signature = ({ username, id, hash }) => {
             coords={coords}
             setCoords={setCoords}
           />}
-          {mode === 'name' && <Name value={name} onChange={setName} />}
-          {mode === 'complete' && <Complete username={username} name={name} />}
+          {mode === 'complete' && <Complete username={username} id={id} />}
         </div>
         <div className="signature-actions">
           <button
-            disabled={mode === 'upload' || mode === 'complete'}
+            disabled={mode === 'drop' || mode === 'complete'}
             className={clsx('upload-again', {
               disabled: mode === 'upload' || mode === 'complete',
             })}
-            onClick={() => setMode('upload')}
+            onClick={() => setMode('drop')}
           >Upload again</button>
           <button
-            disabled={mode === 'upload' || mode === 'crop' || mode === 'complete'}
+            disabled={mode === 'drop' || mode === 'crop' || mode === 'complete'}
             className={clsx('upload-again', {
-              disabled: mode === 'upload' || mode === 'crop' || mode === 'complete',
+              disabled: mode === 'drop' || mode === 'crop' || mode === 'complete',
             })}
             onClick={() => setMode('crop')}
           >Crop again</button>

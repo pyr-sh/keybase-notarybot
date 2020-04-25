@@ -1,6 +1,7 @@
 package keybase
 
 import (
+	"path/filepath"
 	"strings"
 
 	"github.com/pyr-sh/keybase-notarybot/bot/alice"
@@ -27,4 +28,8 @@ func (b *Bot) privateChannel(sender chat1.MsgSender) alice.Channel {
 	return &alice.ChatChannel{
 		Name: b.Username + "," + sender.Username,
 	}
+}
+
+func (b *Bot) PrivateDir(username string) string {
+	return filepath.Join("/keybase/private", b.Username+","+username)
 }

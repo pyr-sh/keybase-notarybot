@@ -5,10 +5,10 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -16,9 +16,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/pyr-sh/keybase-notarybot/bot/alice"
 	"github.com/pyr-sh/keybase-notarybot/bot/models"
+	"go.uber.org/zap"
 )
-
-var alphanumericRE = regexp.MustCompile("[^a-zA-Z0-9]+")
 
 func (a *API) signaturesCreate(c *gin.Context) {
 	if c.Request.Method != http.MethodPost {
@@ -29,10 +28,9 @@ func (a *API) signaturesCreate(c *gin.Context) {
 	username := c.Query("u")
 	id := c.Query("id")
 	sig := c.Query("sig")
-	name := alphanumericRE.ReplaceAllString(c.Query("name"), "")
 	percentage := c.Query("p")
 	tags := c.Query("t")
-	if username == "" || id == "" || sig == "" || name == "" || len(name) > 64 {
+	if username == "" || id == "" || sig == "" {
 		// validation error
 		c.AbortWithError(http.StatusBadRequest, errors.New("invalid args"))
 		return
@@ -116,7 +114,6 @@ func (a *API) signaturesCreate(c *gin.Context) {
 
 	// At this point we're certain we can save the files
 	manifestBytes, err := json.Marshal(models.Signature{
-		Name:       name,
 		Tags:       splitTags,
 		Percentage: percentageFloat,
 	})
@@ -131,6 +128,20 @@ func (a *API) signaturesCreate(c *gin.Context) {
 	if err := a.Alice.FS.Write(c, filepath.Join(sigPath, id+".json"), bytes.NewReader(manifestBytes), nil); err != nil {
 		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, "failed to write the signature manifest"))
 		return
+	}
+	if _, err := a.Alice.Chat.Send(
+		c,
+		alice.ChatChannel{
+			Name: a.Username + "," + username,
+		},
+		fmt.Sprintf("A new signature has been uploaded (name: %s)", id),
+		nil,
+	); err != nil {
+		a.Log.With(
+			zap.Error(err),
+			zap.String("username", username),
+			zap.String("id", id),
+		).Warn("Failed to notify the user")
 	}
 	c.JSON(http.StatusCreated, gin.H{
 		"ok": true,
