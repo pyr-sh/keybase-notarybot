@@ -135,3 +135,40 @@
   border: 1px dotted #000;
   opacity: 0.5;
 }
+
+.signature-complete {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.signature-complete-text {
+  display: inline-block;
+  padding: 16px;
+  text-align: center;
+}
+
+.signature-name {
+  min-width: 250px;
+}
+
+.signature-name-label {
+  display: flex;
+  flex-direction: column;
+}
+
+.signature-name-label span {
+  color: #666;
+  font-size: 0.8rem;
+  padding-bottom: 4px;
+}
+
+#signature-name-input {
+  border: 1px solid #666;
+  border-radius: 6px;
+  padding: 8px 6px;
+  font-size: 0.9rem;
+}

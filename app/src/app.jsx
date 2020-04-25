@@ -11,7 +11,7 @@ import 'normalize.css'
 
 const routes = {
   '/': () => <Home />,
-  '/signature/:username/:id/:mac': ({ username id, mac }) => <Signature id={id} username={username} mac={mac} />,
+  '/signature/:username/:id/:hash': ({ username, id, hash }) => <Signature id={id} username={username} hash={hash} />,
   '/template/:id': ({ id }) => <Template id={id} />,
 }
 

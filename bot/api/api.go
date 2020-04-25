@@ -5,8 +5,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/cors"
 	"go.uber.org/zap"
 
+	"github.com/pyr-sh/keybase-notarybot/bot/alice"
 	"github.com/pyr-sh/keybase-notarybot/bot/database"
 	"github.com/pyr-sh/keybase-notarybot/bot/storage"
 )
@@ -19,6 +21,7 @@ type Config struct {
 	Log      *zap.Logger
 	Storage  *storage.Storage
 	Database *database.Database
+	Alice    *alice.Client
 }
 
 type API struct {
@@ -32,13 +35,12 @@ func New(cfg Config) (*API, error) {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	engine := gin.New()
-	mux := http.NewServeMux()
 	api := &API{
 		Config: cfg,
 		engine: engine,
 		server: &http.Server{
 			Addr:    cfg.Addr,
-			Handler: mux,
+			Handler: cors.Default().Handler(engine),
 		},
 	}
 	if err := api.Routes(); err != nil {
@@ -48,6 +50,8 @@ func New(cfg Config) (*API, error) {
 }
 
 func (a *API) Routes() error {
+	a.engine.Use(a.errorMiddleware)
+
 	a.engine.POST("/signatures", a.signaturesCreate)
 	return nil
 }

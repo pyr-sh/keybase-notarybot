@@ -123,6 +123,7 @@ func main() {
 		Log:      logger,
 		Storage:  storage,
 		Database: database,
+		Alice:    bot.Alice,
 	})
 	if err != nil {
 		panic(err)

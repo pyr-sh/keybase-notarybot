@@ -9,6 +9,7 @@ import (
 
 type Client struct {
 	Chat Chat
+	FS   FS
 
 	cfg *clientConfig
 
@@ -40,6 +41,7 @@ func New(opts ...ClientOption) (*Client, error) {
 		cfg: cfg,
 	}
 	client.Chat = Chat{c: client}
+	client.FS = FS{c: client}
 	return client, nil
 }
 

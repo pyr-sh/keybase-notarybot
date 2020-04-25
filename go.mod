@@ -16,11 +16,10 @@ require (
 	github.com/mattn/go-sqlite3 v2.0.4-0.20200227082846-67986a7832dc+incompatible // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
+	github.com/rs/cors v1.7.0
 	github.com/shopspring/decimal v0.0.0-20200227202807-02e2044944cc
 	github.com/sirupsen/logrus v1.5.0 // indirect
 	go.uber.org/zap v1.14.1
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 	samhofi.us/x/keybase/v2 v2.0.1
 )
-
-replace samhofi.us/x/keybase/v2 => /Users/pzduniak/gopath/src/github.com/pyr-sh/keybase

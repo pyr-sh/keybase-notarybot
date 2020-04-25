@@ -2,15 +2,13 @@ package keybase
 
 import (
 	"context"
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 
 	"github.com/dchest/uniuri"
 	"samhofi.us/x/keybase/v2/types/chat1"
 
 	"github.com/pyr-sh/keybase-notarybot/bot/alice"
+	"github.com/pyr-sh/keybase-notarybot/bot/models"
 )
 
 const createUsageMsg = "Usage: `!notary [create|new] [signature|sig]`"
@@ -27,11 +25,17 @@ func (b *Bot) handleCreate(ctx context.Context, msg chat1.MsgNotification, chann
 		// Actual signature uploads are performed through the HTTP interface, so we simply
 		// need to provide the user with a MAC'd ID.
 		sigID := uniuri.NewLen(uniuri.UUIDLen)
-		mac := hmac.New(sha256.New, b.HMACKey)
-		if _, err := mac.Write([]byte(sigID)); err != nil {
+		sigHash, err := models.CreateSigHash(b.HMACKey, msg.Msg.Sender.Username, sigID)
+		if err != nil {
 			return err
 		}
-		completeURL := b.Config.HTTPURL + "/signature/" + msg.Msg.Sender.Username + "/" + sigID + "/" + hex.EncodeToString(mac.Sum(nil))
+		completeURL := fmt.Sprintf(
+			"%s/signature/%s/%s/%s",
+			b.Config.HTTPURL,
+			msg.Msg.Sender.Username,
+			sigID,
+			sigHash,
+		)
 
 		// We always want to send a signature in a private message.
 		privateChannel := b.privateChannel(msg.Msg.Sender)
