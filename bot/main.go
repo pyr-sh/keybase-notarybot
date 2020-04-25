@@ -30,9 +30,13 @@ var (
 func main() {
 	var opts struct {
 		Debug bool `short:"d" long:"debug" env:"DEBUG" description:"Show verbose debug information"`
-		HTTP  struct {
+		Keys  struct {
+			HMAC string `long:"hmac" env:"HMAC" default:"helloworld" description:"HMAC used to sign the URLs"`
+		} `env-namespace:"KEYS" namespace:"keys" group:"Secret keys"`
+		HTTP struct {
+			URL  string `long:"url" env:"URL" default:"http://localhost:4000" description:"Base URL of the frontend"`
 			Addr string `short:"a" long:"address" env:"ADDRESS" default:":4001" description:"Address to bind the HTTP server to"`
-		} `env-namespace:"HTTP" namespace:"HTTP" group:"HTTP server"`
+		} `env-namespace:"HTTP" namespace:"http" group:"HTTP server"`
 		Database struct {
 			Driver string `long:"driver" env:"DRIVER" default:"postgres" choice:"postgres" description:"Database driver to use"`
 			DSN    string `long:"dsn" env:"DSN" description:"DSN used to connect"`
@@ -101,6 +105,9 @@ func main() {
 		PaperKey:   opts.Keybase.PaperKey,
 		LogPath:    opts.Keybase.LogPath,
 
+		HTTPURL: opts.HTTP.URL,
+		HMACKey: []byte(opts.Keys.HMAC),
+
 		Context: ctx,
 		Log:     logger,
 	})
@@ -109,8 +116,9 @@ func main() {
 	}
 
 	api, err := api.New(api.Config{
-		Addr:  opts.HTTP.Addr,
-		Debug: opts.Debug,
+		Addr:    opts.HTTP.Addr,
+		Debug:   opts.Debug,
+		HMACKey: []byte(opts.Keys.HMAC),
 
 		Log:      logger,
 		Storage:  storage,

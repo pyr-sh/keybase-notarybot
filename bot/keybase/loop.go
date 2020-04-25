@@ -2,12 +2,14 @@ package keybase
 
 import (
 	"context"
-	"log"
+	"strings"
 
 	"go.uber.org/zap"
 
 	"github.com/pyr-sh/keybase-notarybot/bot/alice"
 )
+
+const usageMsg = "Usage: `!notary [help|create|list|update]`"
 
 func (b *Bot) handlersLoop() {
 	for {
@@ -35,27 +37,38 @@ func (b *Bot) startHandler(ctx context.Context) error {
 			b.Log.With(zap.String("error", *msg.Error)).Warn("Bot handler received an error")
 			continue
 		}
-		if msg.Msg == nil {
+		if msg.Msg == nil || msg.Msg.Content.TypeName != "text" {
 			continue
 		}
-
-		log.Printf("got msg %#v", msg)
 		channel := alice.ConversationID(msg.Msg.ConvID)
-		x, err := b.Alice.Chat.Send(
-			ctx,
-			channel,
-			"hello world",
-			nil,
-		)
-		if err != nil {
-			return err
+		if !strings.HasPrefix(msg.Msg.Content.Text.Body, "!notary ") {
+			if _, err := b.Alice.Chat.Send(ctx, channel, usageMsg, nil); err != nil {
+				return err
+			}
+			continue
 		}
-		log.Printf("%#v", x)
-		y, err := b.Alice.Chat.React(ctx, channel, *x.MessageID, ":wave:")
-		if err != nil {
-			return err
+		msgParts := strings.Split(msg.Msg.Content.Text.Body, " ")
+		if len(msgParts) == 1 {
+			if _, err := b.Alice.Chat.Send(ctx, channel, usageMsg, nil); err != nil {
+				return err
+			}
+			continue
 		}
-		log.Printf("%#v", y)
+		args := msgParts[1:]
+		switch args[0] {
+		case "help":
+			if err := b.handleHelp(ctx, msg, channel, args); err != nil {
+				return err
+			}
+		case "create", "new":
+			if err := b.handleCreate(ctx, msg, channel, args); err != nil {
+				return err
+			}
+		default:
+			if _, err := b.Alice.Chat.Send(ctx, channel, usageMsg, nil); err != nil {
+				return err
+			}
+		}
 	}
 	if err := ch.Err(); err != nil {
 		return err

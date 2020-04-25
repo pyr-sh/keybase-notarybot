@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/Masterminds/squirrel v1.2.1-0.20200326194120-b5499f565a04
+	github.com/dchest/uniuri v0.0.0-20200228104902-7aecb25e1fe5
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/fatih/structtag v1.2.1-0.20200124061725-b5218c33d866
 	github.com/gin-gonic/gin v1.6.2

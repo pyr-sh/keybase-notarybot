@@ -16,6 +16,9 @@ type Config struct {
 	Username   string
 	PaperKey   string
 
+	HTTPURL string
+	HMACKey []byte
+
 	Context context.Context
 	Log     *zap.Logger
 }

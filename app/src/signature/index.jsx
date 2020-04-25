@@ -7,14 +7,10 @@ import Position from './position'
 
 import './style.css'
 
-type Props = {
-  id: string
-}
-
 const maxWidth = 600
 const maxHeight = 300
 
-const Signature = ({ id }: Props) => {
+const Signature = ({ id, mac }) => {
   const [mode, setMode] = React.useState('upload')
 
   const [uncroppedImage, setUncroppedImage] = React.useState('')
