@@ -19,7 +19,7 @@ type Result struct {
 
 // Runs the command and decodes its output.
 func (r *Result) DecodeOnce(input interface{}) error {
-	output, err := r.cmd.Output()
+	output, err := r.RawOnce()
 	if err != nil {
 		return err
 	}
@@ -27,6 +27,18 @@ func (r *Result) DecodeOnce(input interface{}) error {
 		return err
 	}
 	return nil
+}
+
+// Runs the command simply returning its output.
+func (r *Result) RawOnce() ([]byte, error) {
+	res, err := r.cmd.Output()
+	if err != nil {
+		if x, ok := err.(*exec.ExitError); ok {
+			return nil, errors.Wrapf(err, "stderr: %s", string(x.Stderr))
+		}
+		return nil, err
+	}
+	return res, nil
 }
 
 // Runs the command, discarding its output.
@@ -163,6 +175,7 @@ type jm map[string]interface{}
 
 // Executes a single Keybase CLI command without any stdin
 func (c *Client) Exec(ctx context.Context, args ...interface{}) (*Result, error) {
+	args = append([]interface{}{"--no-auto-fork"}, args...)
 	return c.ExecWithInput(ctx, nil, args...)
 }
 

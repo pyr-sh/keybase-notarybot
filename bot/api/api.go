@@ -14,9 +14,10 @@ import (
 )
 
 type Config struct {
-	Addr    string
-	Debug   bool
-	HMACKey []byte
+	Addr     string
+	Debug    bool
+	HMACKey  []byte
+	Username string
 
 	Log      *zap.Logger
 	Storage  *storage.Storage

@@ -1,7 +1,8 @@
 package main
 
 import (
-	"github.com/docker/distribution/context"
+	"context"
+
 	flags "github.com/jessevdk/go-flags"
 	"go.uber.org/zap"
 
@@ -10,22 +11,6 @@ import (
 	"github.com/pyr-sh/keybase-notarybot/bot/keybase"
 	"github.com/pyr-sh/keybase-notarybot/bot/storage"
 )
-
-/*
-var (
-	storageKind      = flag.String("storage_kind", "local", "where to keep the static files")
-	storageParams    = flag.String("storage_params", "", )
-	storageContainer = flag.String("storage_container", "", "name of the storage container to use")
-
-	inputPath       = flag.String("i", "./template.pdf", "input path")
-	outputPath      = flag.String("o", "./output.pdf", "output path")
-	signaturePath   = flag.String("s", "./signature.png", "signature path")
-	signatureX      = flag.Float64("x", 0, "sig x")
-	signatureY      = flag.Float64("y", 0, "sig y")
-	signatureWidth  = flag.Float64("w", 1, "sig w")
-	signatureHeight = flag.Float64("h", 1, "sig h")
-)
-*/
 
 func main() {
 	var opts struct {
@@ -42,11 +27,12 @@ func main() {
 			DSN    string `long:"dsn" env:"DSN" description:"DSN used to connect"`
 		} `env-namespace:"DB" namespace:"db" group:"Database connectivity"`
 		Keybase struct {
-			BinaryPath string `long:"binary_path" env:"BINARY_PATH" description:"Path to the binary path"`
-			HomeDir    string `long:"home_dir" env:"HOMEDIR" description:"Path to the home dir"`
-			Username   string `long:"username" env:"USERNAME" description:"If provided, the bot gets provisioned using oneshot"`
-			PaperKey   string `long:"paperkey" env:"PAPERKEY" description:"If provided, the bot gets provisioned using oneshot"`
-			LogPath    string `long:"log_path" env:"LOG_PATH" description:"If not set, logs are printed out to stdout/stderr"`
+			BinaryPath  string `long:"binary_path" env:"BINARY_PATH" description:"Path to the binary path"`
+			HomeDir     string `long:"home_dir" env:"HOMEDIR" description:"Path to the home dir"`
+			Username    string `long:"username" env:"USERNAME" description:"If provided, the bot gets provisioned using oneshot"`
+			PaperKey    string `long:"paperkey" env:"PAPERKEY" description:"If provided, the bot gets provisioned using oneshot"`
+			LogPath     string `long:"log_path" env:"LOG_PATH" description:"If not set, logs are printed out to stdout/stderr"`
+			KBFSLogPath string `long:"kbfs_log_path" env:"KBFS_LOG_PATH" description:"If not set, logs are printed out to stdout/stderr"`
 		} `env-namespace:"KB" namespace:"kb" group:"Keybase bot settings"`
 		Storage struct {
 			Kind      string            `long:"kind" env:"KIND" choice:"google" choice:"local" choice:"s3" choice:"swift" default:"swift" description:"What storage driver to use"`
@@ -99,11 +85,12 @@ func main() {
 	}
 
 	bot, err := keybase.New(keybase.Config{
-		BinaryPath: opts.Keybase.BinaryPath,
-		HomeDir:    opts.Keybase.HomeDir,
-		Username:   opts.Keybase.Username,
-		PaperKey:   opts.Keybase.PaperKey,
-		LogPath:    opts.Keybase.LogPath,
+		BinaryPath:  opts.Keybase.BinaryPath,
+		HomeDir:     opts.Keybase.HomeDir,
+		Username:    opts.Keybase.Username,
+		PaperKey:    opts.Keybase.PaperKey,
+		LogPath:     opts.Keybase.LogPath,
+		KBFSLogPath: opts.Keybase.KBFSLogPath,
 
 		HTTPURL: opts.HTTP.URL,
 		HMACKey: []byte(opts.Keys.HMAC),
@@ -116,9 +103,10 @@ func main() {
 	}
 
 	api, err := api.New(api.Config{
-		Addr:    opts.HTTP.Addr,
-		Debug:   opts.Debug,
-		HMACKey: []byte(opts.Keys.HMAC),
+		Addr:     opts.HTTP.Addr,
+		Debug:    opts.Debug,
+		HMACKey:  []byte(opts.Keys.HMAC),
+		Username: opts.Keybase.Username,
 
 		Log:      logger,
 		Storage:  storage,

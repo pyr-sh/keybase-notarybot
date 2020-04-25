@@ -101,13 +101,6 @@ const Signature = ({ username, id, hash }) => {
           percentageHeight = 1 - (size[1] - distanceFromTop) / size[1]
         }
 
-        if (percentageHeight !== null) {
-          console.log(`The line will pass through the signature at ${Math.round(percentageHeight * 100 * 100) / 100}%`)
-          console.log(name, username, id, hash)
-        } else {
-          console.log(`We'll stick the signature above the line.`)
-        }
-
         // Send the request to the API
         try {
           await axios({
@@ -124,7 +117,7 @@ const Signature = ({ username, id, hash }) => {
           })
           setMode('complete')
         } catch (e) {
-          alert(e.toString())
+          alert(e.response.data.error)
         }
       }
       img.src = croppedImage

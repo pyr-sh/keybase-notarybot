@@ -10,11 +10,12 @@ import (
 )
 
 type Config struct {
-	BinaryPath string
-	HomeDir    string
-	LogPath    string
-	Username   string
-	PaperKey   string
+	BinaryPath  string
+	HomeDir     string
+	LogPath     string
+	KBFSLogPath string
+	Username    string
+	PaperKey    string
 
 	HTTPURL string
 	HMACKey []byte
@@ -29,7 +30,9 @@ type Bot struct {
 }
 
 func New(cfg Config) (*Bot, error) {
-	opts := []alice.ClientOption{}
+	opts := []alice.ClientOption{
+		alice.KBFSEnabled(true),
+	}
 	if cfg.BinaryPath != "" {
 		opts = append(opts, alice.ExecutablePath(cfg.BinaryPath))
 	}
@@ -38,6 +41,9 @@ func New(cfg Config) (*Bot, error) {
 	}
 	if cfg.LogPath != "" {
 		opts = append(opts, alice.LogFilePath(cfg.LogPath))
+	}
+	if cfg.KBFSLogPath != "" {
+		opts = append(opts, alice.KBFSLogFilePath(cfg.KBFSLogPath))
 	}
 	client, err := alice.New(opts...)
 	if err != nil {
