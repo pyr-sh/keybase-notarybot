@@ -9,6 +9,7 @@ import NotFound from './not-found'
 import Layout from './layout'
 
 import 'normalize.css'
+import 'react-pdf/dist/Page/AnnotationLayer.css'
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`
 
