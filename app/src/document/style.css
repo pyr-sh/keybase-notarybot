@@ -45,3 +45,45 @@
   color: rgba(0, 0, 0, 0.5);
   cursor: pointer;
 }
+
+.document-position {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: #666;
+  z-index: 300;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.document-document {
+  position: relative;
+}
+
+#document-position {
+  overflow: hidden;
+}
+
+.document-zoom {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: #fff;
+  border: 1px solid #999;
+  border-radius: 4px;
+  padding: 5px 10px;
+}
+
+.document-page {
+  position: absolute;
+  top: 15px;
+  left: 20px;
+  background: #fff;
+  border: 1px solid #999;
+  border-radius: 4px;
+  padding: 5px 10px;
+}
