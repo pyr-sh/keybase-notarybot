@@ -1,6 +1,8 @@
 package keybase
 
 import (
+	"context"
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -32,4 +34,8 @@ func (b *Bot) privateChannel(sender chat1.MsgSender) alice.Channel {
 
 func (b *Bot) PrivateDir(username string) string {
 	return filepath.Join("/keybase/private", b.Username+","+username)
+}
+
+func (b *Bot) Sendf(ctx context.Context, channel alice.Channel, msg string, args ...interface{}) (*chat1.SendRes, error) {
+	return b.Alice.Chat.Send(ctx, channel, fmt.Sprintf(msg, args...), nil)
 }

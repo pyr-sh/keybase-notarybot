@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
+	messagebus "github.com/vardius/message-bus"
 	"go.uber.org/zap"
 
 	"github.com/pyr-sh/keybase-notarybot/bot/alice"
@@ -27,6 +28,7 @@ type Config struct {
 type Bot struct {
 	Config
 	Alice *alice.Client
+	Bus   messagebus.MessageBus
 }
 
 func New(cfg Config) (*Bot, error) {
@@ -53,6 +55,7 @@ func New(cfg Config) (*Bot, error) {
 	bot := &Bot{
 		Config: cfg,
 		Alice:  client,
+		Bus:    messagebus.New(128),
 	}
 	return bot, nil
 }

@@ -2,6 +2,8 @@ package keybase
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"strings"
 
 	"go.uber.org/zap"
@@ -56,6 +58,9 @@ func (b *Bot) startHandler(ctx context.Context) error {
 			b.Log.With(zap.String("error", *msg.Error)).Warn("Bot handler received an error")
 			continue
 		}
+		if msg.Msg != nil {
+			b.Bus.Publish(fmt.Sprintf("%s:%s", msg.Msg.Sender.Username, msg.Msg.Content.TypeName), msg)
+		}
 		if msg.Msg == nil || msg.Msg.Content.TypeName != "text" {
 			continue
 		}
@@ -76,29 +81,36 @@ func (b *Bot) startHandler(ctx context.Context) error {
 		if _, err := b.Alice.Chat.React(ctx, channel, msg.Msg.Id, ":eyes:"); err != nil {
 			return err
 		}
-		args := msgParts[1:]
-		switch args[0] {
-		case "help":
-			if err := b.handleHelp(ctx, msg, channel, args); err != nil {
-				return err
+
+		go func(msg chat1.MsgNotification) {
+			args := msgParts[1:]
+			switch args[0] {
+			case "help":
+				if err := b.handleHelp(ctx, msg, channel, args); err != nil {
+					log.Println(err)
+				}
+			case "create", "new":
+				if err := b.handleCreate(ctx, msg, channel, args); err != nil {
+					log.Println(err)
+				}
+			case "list":
+				if err := b.handleList(ctx, msg, channel, args); err != nil {
+					log.Println(err)
+				}
+			case "delete", "del", "rm", "remove":
+				if err := b.handleDelete(ctx, msg, channel, args); err != nil {
+					log.Println(err)
+				}
+			case "sign":
+				if err := b.handleSign(ctx, msg, channel, args); err != nil {
+					log.Println(err)
+				}
+			default:
+				if _, err := b.Alice.Chat.Send(ctx, channel, usageMsg, nil); err != nil {
+					log.Println(err)
+				}
 			}
-		case "create", "new":
-			if err := b.handleCreate(ctx, msg, channel, args); err != nil {
-				return err
-			}
-		case "list":
-			if err := b.handleList(ctx, msg, channel, args); err != nil {
-				return err
-			}
-		case "delete", "del", "rm", "remove":
-			if err := b.handleDelete(ctx, msg, channel, args); err != nil {
-				return err
-			}
-		default:
-			if _, err := b.Alice.Chat.Send(ctx, channel, usageMsg, nil); err != nil {
-				return err
-			}
-		}
+		}(msg)
 	}
 	if err := ch.Err(); err != nil {
 		return err

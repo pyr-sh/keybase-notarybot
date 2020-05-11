@@ -69,21 +69,136 @@
 }
 
 .document-zoom {
-  position: absolute;
   top: 15px;
   right: 20px;
-  background: #fff;
-  border: 1px solid #999;
-  border-radius: 4px;
-  padding: 5px 10px;
 }
 
 .document-page {
-  position: absolute;
   top: 15px;
   left: 20px;
+}
+
+.document-page, .document-zoom {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  padding: 4px 4px;
   background: #fff;
   border: 1px solid #999;
   border-radius: 4px;
-  padding: 5px 10px;
+}
+
+.button {
+  display: flex;
+  width: 16px;
+  margin-left: 4px;
+  margin-right: 4px;
+  text-align: center;
+  color: #000;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.button:hover {
+  color: #444;
+}
+
+.document-back, .document-save {
+  position: absolute;
+}
+
+.document-back {
+  top: 58px;
+  left: 20px;
+}
+.document-save {
+  top: 94px;
+  left: 20px;
+}
+
+.document-back button, .document-save button {
+  background: #fff;
+  border: 1px solid #999;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.document-back button:hover {
+  background: #eee;
+}
+
+.document-palette {
+  position: absolute;
+  left: 20px;
+  top: 130px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #999;
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+
+.document-palette h3 {
+  margin: 0;
+  margin-bottom: 4px;
+  font-size: 1rem;
+  display: flex;
+  flex-direction: row;
+}
+
+.document-palette h3 span, .document-signatory span {
+  flex-grow: 1;
+}
+
+.document-palette .document-signatory {
+  display: flex;
+  flex-direction: row;
+  padding: 4px 0px;
+  border-bottom: 1px solid #999;
+}
+
+.document-palette .document-signatory:last-child {
+  border-bottom: 0;
+}
+
+.document-signatory span {
+  padding-right: 8px;
+}
+
+.document-placed {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  border: rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.document-complete {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.document-complete-text {
+  display: inline-block;
+  padding: 16px;
+  text-align: center;
 }

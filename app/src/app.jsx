@@ -10,6 +10,7 @@ import Layout from './layout'
 
 import 'normalize.css'
 import 'react-pdf/dist/Page/AnnotationLayer.css'
+import '@fortawesome/fontawesome-free/css/all.css'
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`
 

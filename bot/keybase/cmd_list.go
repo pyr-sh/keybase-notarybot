@@ -52,6 +52,36 @@ func (b *Bot) handleList(ctx context.Context, msg chat1.MsgNotification, channel
 		); err != nil {
 			return err
 		}
+	case "document", "doc", "documents", "docs":
+		// Make sure that it doesn't already exist
+		docs, err := b.ListUsersDocs(ctx, msg.Msg.Sender.Username)
+		if err != nil {
+			return err
+		}
+		lines := []string{
+			fmt.Sprintf("@%s, you have uploaded the following documents:", msg.Msg.Sender.Username),
+		}
+		for _, doc := range docs {
+			lines = append(
+				lines,
+				fmt.Sprintf(
+					"%s (created %s) - %s",
+					strings.TrimSuffix(filepath.Base(doc.Name()), filepath.Ext(doc.Name())),
+					humanize.Time(doc.ModTime()),
+					strings.Replace(doc.Name(), ".json", ".pdf", 1),
+				),
+			)
+		}
+		if len(docs) == 0 {
+			lines = append(lines, "_No documents found_")
+		}
+		if _, err := b.Alice.Chat.Send(
+			ctx, channel,
+			strings.Join(lines, "\n"),
+			nil,
+		); err != nil {
+			return err
+		}
 	default:
 		if _, err := b.Alice.Chat.Send(ctx, channel, listUsageMsg, nil); err != nil {
 			return err

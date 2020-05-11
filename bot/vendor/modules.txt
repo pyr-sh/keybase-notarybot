@@ -41,8 +41,6 @@ github.com/aws/aws-sdk-go/service/s3/s3iface
 github.com/aws/aws-sdk-go/service/s3/s3manager
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
-# github.com/dchest/uniuri v0.0.0-20200228104902-7aecb25e1fe5
-github.com/dchest/uniuri
 # github.com/dustin/go-humanize v1.0.0
 github.com/dustin/go-humanize
 # github.com/fatih/structtag v1.2.1-0.20200124061725-b5218c33d866
@@ -113,6 +111,8 @@ github.com/pkg/errors
 github.com/rs/cors
 # github.com/ugorji/go/codec v1.1.7
 github.com/ugorji/go/codec
+# github.com/vardius/message-bus v1.1.4
+github.com/vardius/message-bus
 # go.opencensus.io v0.21.0
 go.opencensus.io
 go.opencensus.io/internal

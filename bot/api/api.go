@@ -53,6 +53,7 @@ func New(cfg Config) (*API, error) {
 func (a *API) Routes() error {
 	a.engine.Use(a.errorMiddleware)
 
+	a.engine.POST("/documents", a.documentsCreate)
 	a.engine.POST("/signatures", a.signaturesCreate)
 	return nil
 }

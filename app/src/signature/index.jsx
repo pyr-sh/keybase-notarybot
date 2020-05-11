@@ -110,7 +110,6 @@ const Signature = ({ username, id, hash }) => {
     }
   }, [mode, uncroppedImage, setCroppedImage, croppedImage, crop, coords, size, hash, id, username])
 
-
   return (
     <div className="signature-wrapper">
       <div className="signature-modal">

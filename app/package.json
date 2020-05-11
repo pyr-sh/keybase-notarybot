@@ -4,6 +4,7 @@
   "main": "src/index.jsx",
   "private": true,
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.13.0",
     "@openfonts/open-sans_all": "^1.44.0",
     "axios": "^0.19.2",
     "clsx": "^1.1.0",
