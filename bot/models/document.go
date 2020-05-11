@@ -6,6 +6,7 @@ type Document struct {
 
 type Signatory struct {
 	Name   string  `json:"name"`
+	Page   int     `json:"page"`
 	X      float64 `json:"x"`
 	Y      float64 `json:"y"`
 	Width  float64 `json:"width"`

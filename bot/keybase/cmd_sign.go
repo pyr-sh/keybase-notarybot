@@ -1,17 +1,21 @@
 package keybase
 
 import (
+	"bytes"
 	"context"
-	"encoding/json"
+	"io/ioutil"
 	"log"
 	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
 
+	"github.com/pzduniak/unipdf/creator"
+	"github.com/pzduniak/unipdf/model"
+	"samhofi.us/x/keybase/v2/types/chat1"
+
 	"github.com/pyr-sh/keybase-notarybot/bot/alice"
 	"github.com/pyr-sh/keybase-notarybot/bot/models"
-	"samhofi.us/x/keybase/v2/types/chat1"
 )
 
 const signUsageMsg = "Usage: `!notary sign (doc name){3-64} [username1] [username2] [username3...]`"
@@ -96,8 +100,6 @@ func (b *Bot) handleSign(ctx context.Context, msg chat1.MsgNotification, channel
 		signatureNames[short] = names
 		signatureNameToPath[short] = nameToPath
 	}
-
-	log.Println(pdfPath)
 
 	// We're effectively trying to figure out who's what signatory
 	if len(doc.Signatories) == 0 {
@@ -203,8 +205,120 @@ func (b *Bot) handleSign(ctx context.Context, msg chat1.MsgNotification, channel
 		fieldToPath[signatory.Name] = path
 	}
 
-	jsb, _ := json.Marshal(fieldToPath)
-	b.Sendf(ctx, channel, "@%s, here's what I would do:\n%s", msg.Msg.Sender.Username, string(jsb))
+	// Group the signatures by page
+	signatories := map[int][]*models.Signatory{}
+	for _, signatory := range doc.Signatories {
+		if _, ok := signatories[signatory.Page]; !ok {
+			signatories[signatory.Page] = []*models.Signatory{}
+		}
+		signatories[signatory.Page] = append(signatories[signatory.Page], signatory)
+	}
+
+	// Save the file in KBFS
+	c := creator.New()
+	pdfFile, err := b.Alice.FS.Read(ctx, pdfPath, nil)
+	if err != nil {
+		return err
+	}
+	pdfBytes, err := ioutil.ReadAll(pdfFile)
+	if err != nil {
+		if err := pdfFile.Close(); err != nil {
+			log.Println(err)
+		}
+		return err
+	}
+	if err := pdfFile.Close(); err != nil {
+		return err
+	}
+
+	pdf, err := model.NewPdfReader(bytes.NewReader(pdfBytes))
+	if err != nil {
+		return err
+	}
+
+	pagesCount, err := pdf.GetNumPages()
+	if err != nil {
+		return err
+	}
+
+	for i := 1; i <= pagesCount; i++ {
+		page, err := pdf.GetPage(i)
+		if err != nil {
+			return err
+		}
+		c.AddPage(page)
+
+		for _, signatory := range signatories[i] {
+			path := strings.Replace(fieldToPath[signatory.Name], ".json", ".png", 1)
+			sigFile, err := b.Alice.FS.Read(ctx, path, nil)
+			if err != nil {
+				return err
+			}
+			sigBytes, err := ioutil.ReadAll(sigFile)
+			if err != nil {
+				if err := sigFile.Close(); err != nil {
+					log.Println(err)
+				}
+				return err
+			}
+			if err := sigFile.Close(); err != nil {
+				return err
+			}
+			sigManifest, err := b.ReadSig(ctx, fieldToPath[signatory.Name])
+			if err != nil {
+				return err
+			}
+
+			signatureImage, err := c.NewImageFromData(sigBytes)
+			if err != nil {
+				return err
+			}
+
+			zeroLevel := float64(1)
+			if sigManifest.Percentage != nil {
+				zeroLevel = *sigManifest.Percentage
+			}
+
+			var (
+				posX         = c.Context().PageWidth * signatory.X
+				posY         = c.Context().PageHeight * signatory.Y
+				targetWidth  = c.Context().PageWidth * signatory.Width
+				targetHeight = c.Context().PageHeight * signatory.Height
+				targetRatio  = targetWidth / targetHeight
+				sigBoxRatio  = signatureImage.Width() / (signatureImage.Height() * zeroLevel)
+			)
+			if targetRatio >= sigBoxRatio {
+				signatureImage.ScaleToHeight(targetHeight / zeroLevel)
+
+				// We want to place the image in the middle of the horizontal field.
+				signatureImage.SetPos(posX+targetWidth/2-signatureImage.Width()/2, posY)
+				if err := c.Draw(signatureImage); err != nil {
+					return err
+				}
+			} else {
+				signatureImage.ScaleToWidth(targetWidth)
+
+				// We want to place the image in the middle of the vertical field.
+				signatureImage.SetPos(posX, posY+targetHeight/2-(signatureImage.Height()*zeroLevel)/2)
+			}
+
+			if err := c.Draw(signatureImage); err != nil {
+				return err
+			}
+		}
+	}
+
+	outputBuffer := &bytes.Buffer{}
+	if err := c.Write(outputBuffer); err != nil {
+		return err
+	}
+
+	outputPath := filepath.Join(b.PrivateDir(msg.Msg.Sender.Username), "output.pdf")
+	if err := b.Alice.FS.Write(ctx, outputPath, outputBuffer, nil); err != nil {
+		return err
+	}
+
+	b.Sendf(ctx, channel, "@%s, here's your signed document:\n%s", msg.Msg.Sender.Username, outputPath)
 
 	return nil
 }
