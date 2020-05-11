@@ -3,6 +3,7 @@ package keybase
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"path/filepath"
@@ -313,7 +314,10 @@ func (b *Bot) handleSign(ctx context.Context, msg chat1.MsgNotification, channel
 		return err
 	}
 
-	outputPath := filepath.Join(b.PrivateDir(msg.Msg.Sender.Username), "output.pdf")
+	outputPath := filepath.Join(
+		b.PrivateDir(strings.Join(usernames, ",")),
+		fmt.Sprintf("%s-%s.pdf", id, strings.Join(usernames, "-")),
+	)
 	if err := b.Alice.FS.Write(ctx, outputPath, outputBuffer, nil); err != nil {
 		return err
 	}
