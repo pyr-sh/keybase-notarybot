@@ -9,8 +9,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pyr-sh/keybase-notarybot/bot/alice"
-	"github.com/pyr-sh/keybase-notarybot/bot/database"
-	"github.com/pyr-sh/keybase-notarybot/bot/storage"
 )
 
 type Config struct {
@@ -19,10 +17,8 @@ type Config struct {
 	HMACKey  []byte
 	Username string
 
-	Log      *zap.Logger
-	Storage  *storage.Storage
-	Database *database.Database
-	Alice    *alice.Client
+	Log   *zap.Logger
+	Alice *alice.Client
 }
 
 type API struct {

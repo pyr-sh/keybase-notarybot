@@ -7,9 +7,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pyr-sh/keybase-notarybot/bot/api"
-	"github.com/pyr-sh/keybase-notarybot/bot/database"
 	"github.com/pyr-sh/keybase-notarybot/bot/keybase"
-	"github.com/pyr-sh/keybase-notarybot/bot/storage"
 )
 
 func main() {
@@ -22,10 +20,6 @@ func main() {
 			URL  string `long:"url" env:"URL" default:"http://localhost:4000" description:"Base URL of the frontend"`
 			Addr string `short:"a" long:"address" env:"ADDRESS" default:":4001" description:"Address to bind the HTTP server to"`
 		} `env-namespace:"HTTP" namespace:"http" group:"HTTP server"`
-		Database struct {
-			Driver string `long:"driver" env:"DRIVER" default:"postgres" choice:"postgres" description:"Database driver to use"`
-			DSN    string `long:"dsn" env:"DSN" description:"DSN used to connect"`
-		} `env-namespace:"DB" namespace:"db" group:"Database connectivity"`
 		Keybase struct {
 			BinaryPath  string `long:"binary_path" env:"BINARY_PATH" description:"Path to the binary path"`
 			HomeDir     string `long:"home_dir" env:"HOMEDIR" description:"Path to the home dir"`
@@ -34,11 +28,6 @@ func main() {
 			LogPath     string `long:"log_path" env:"LOG_PATH" description:"If not set, logs are printed out to stdout/stderr"`
 			KBFSLogPath string `long:"kbfs_log_path" env:"KBFS_LOG_PATH" description:"If not set, logs are printed out to stdout/stderr"`
 		} `env-namespace:"KB" namespace:"kb" group:"Keybase bot settings"`
-		Storage struct {
-			Kind      string            `long:"kind" env:"KIND" choice:"google" choice:"local" choice:"s3" choice:"swift" default:"swift" description:"What storage driver to use"`
-			Params    map[string]string `long:"param" env:"PARAMS" description:"A map of storage driver configuration"`
-			Container string            `long:"container" env:"CONTAINER" description:"Name of the storage container to use"`
-		} `env-namespace:"STORAGE" namespace:"storage" group:"File storage"`
 	}
 	if _, err := flags.Parse(&opts); err != nil {
 		if err, ok := err.(*flags.Error); ok && err.Type == flags.ErrHelp {
@@ -61,28 +50,6 @@ func main() {
 	}
 
 	ctx := context.Background()
-
-	storage, err := storage.New(storage.Config{
-		Kind:      opts.Storage.Kind,
-		Params:    opts.Storage.Params,
-		Container: opts.Storage.Container,
-
-		Log: logger,
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	database, err := database.New(database.Config{
-		Context: ctx,
-		Driver:  opts.Database.Driver,
-		DSN:     opts.Database.DSN,
-
-		Log: logger,
-	})
-	if err != nil {
-		panic(err)
-	}
 
 	bot, err := keybase.New(keybase.Config{
 		BinaryPath:  opts.Keybase.BinaryPath,
@@ -108,10 +75,8 @@ func main() {
 		HMACKey:  []byte(opts.Keys.HMAC),
 		Username: opts.Keybase.Username,
 
-		Log:      logger,
-		Storage:  storage,
-		Database: database,
-		Alice:    bot.Alice,
+		Log:   logger,
+		Alice: bot.Alice,
 	})
 	if err != nil {
 		panic(err)
