@@ -1,4 +1,5 @@
 FROM node:12.16.3 as build
+ENV API_URL=https://notarybot.bots.pyr.sh
 WORKDIR /usr/src/app
 COPY package.json yarn.lock ./
 RUN yarn
