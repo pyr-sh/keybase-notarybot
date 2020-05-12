@@ -40,6 +40,7 @@ const Document = ({ username, id, hash }) => {
               y: sig.y / 100,
               width: sig.width / 100,
               height: sig.height / 100,
+              page: sig.page,
               name: sig.name,
             }))),
           },
